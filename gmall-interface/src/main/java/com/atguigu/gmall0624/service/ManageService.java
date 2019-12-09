@@ -24,4 +24,10 @@ public interface ManageService {
     public List<BaseAttrValue> getAttrValueList(String attrId);
 
     BaseAttrInfo getAtrrInfo(String attrId);
+
+    List<SpuInfo> spuList(SpuInfo spuInfo);
+
+    List<BaseSaleAttr> baseSaleAttrList();
+
+    void saveSpuInfo(SpuInfo spuInfo);
 }
