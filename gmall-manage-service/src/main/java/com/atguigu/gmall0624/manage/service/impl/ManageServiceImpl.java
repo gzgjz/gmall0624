@@ -42,6 +42,18 @@ public class ManageServiceImpl implements ManageService{
     @Autowired
     private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
 
+    @Autowired
+    private SkuAttrValueMapper skuAttrValueMapper;
+
+    @Autowired
+    private SkuImageMapper skuImageMapper;
+
+    @Autowired
+    private SkuInfoMapper skuInfoMapper;
+
+    @Autowired
+    private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
+
     //一级分类
     @Override
     public List<BaseCatalog1> getCatalog1() {
@@ -65,6 +77,12 @@ public class ManageServiceImpl implements ManageService{
     @Override
     public List<BaseAttrInfo> attrInfoList(BaseAttrInfo baseAttrInfo) {
         return baseAttrInfoMapper.select(baseAttrInfo);
+
+    }
+
+    @Override
+    public List<BaseAttrInfo> attrInfoList(String catalog3Id) {
+        return baseAttrInfoMapper.selectBaseAttrInfoListByCatalog3Id(catalog3Id);
     }
 
     //添加属性
@@ -154,6 +172,48 @@ public class ManageServiceImpl implements ManageService{
             }
         }
     }
+
+    @Override
+    public List<SpuImage> spuImageList(SpuImage spuImage) {
+        return spuImageMapper.select(spuImage);
+    }
+
+    @Override
+    public List<SpuSaleAttr> spuSaleAttrList(String spuId) {
+        return spuSaleAttrMapper.selectSpuSaleAttrList(spuId);
+    }
+
+    @Override
+    @Transactional
+    public void saveSkuInfo(SkuInfo skuInfo) {
+        skuInfoMapper.insertSelective(skuInfo);
+
+
+        List<SkuAttrValue> skuAttrValueList = skuInfo.getSkuAttrValueList();
+        if(checkListIsEmpty(skuAttrValueList)){
+            for (SkuAttrValue skuAttrValue : skuAttrValueList) {
+                skuAttrValue.setSkuId(skuInfo.getId());
+                skuAttrValueMapper.insertSelective(skuAttrValue);
+            }
+        }
+
+        List<SkuSaleAttrValue> skuSaleAttrValueList = skuInfo.getSkuSaleAttrValueList();
+        if(checkListIsEmpty(skuSaleAttrValueList)){
+            for (SkuSaleAttrValue skuSaleAttrValue : skuSaleAttrValueList) {
+                skuSaleAttrValue.setSkuId(skuInfo.getId());
+                skuSaleAttrValueMapper.insertSelective(skuSaleAttrValue);
+            }
+        }
+
+        List<SkuImage> skuImageList = skuInfo.getSkuImageList();
+        if(checkListIsEmpty(skuImageList)){
+            for (SkuImage skuImage : skuImageList) {
+                skuImage.setSkuId(skuInfo.getId());
+                skuImageMapper.insertSelective(skuImage);
+            }
+        }
+    }
+
 
     public <T> boolean checkListIsEmpty(List<T> list){
         if (list!=null && list.size()>0){

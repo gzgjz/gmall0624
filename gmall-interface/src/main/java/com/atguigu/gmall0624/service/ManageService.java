@@ -17,6 +17,7 @@ public interface ManageService {
 
     //详细信息
     List<BaseAttrInfo> attrInfoList(BaseAttrInfo baseAttrInfo);
+    List<BaseAttrInfo> attrInfoList(String catalog3Id);
 
     //添加属性
     void saveAttrInfo(BaseAttrInfo baseAttrInfo);
@@ -30,4 +31,10 @@ public interface ManageService {
     List<BaseSaleAttr> baseSaleAttrList();
 
     void saveSpuInfo(SpuInfo spuInfo);
+
+    List<SpuImage> spuImageList(SpuImage spuImage);
+
+    List<SpuSaleAttr> spuSaleAttrList(String spuId);
+
+    void saveSkuInfo(SkuInfo skuInfo);
 }

@@ -32,14 +32,15 @@ public class ManageController {
     //http://localhost:8082/getCatalog3?catalog2Id=2
     @RequestMapping("getCatalog3")
     public List<BaseCatalog3> getCatalog3(BaseCatalog3 baseCatalog3){
+
         return manageService.getCatalog3(baseCatalog3);
     }
 
     //详细信息
     //http://localhost:8082/attrInfoList?catalog3Id=5
     @RequestMapping("attrInfoList")
-    public List<BaseAttrInfo> attrInfoList(BaseAttrInfo baseAttrInfo){
-        return manageService.attrInfoList(baseAttrInfo);
+    public List<BaseAttrInfo> attrInfoList(BaseAttrInfo baseAttrInfo,String catalog3Id){
+        return manageService.attrInfoList(catalog3Id);
     }
 
 
