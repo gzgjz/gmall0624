@@ -2,11 +2,13 @@ package com.atguigu.gmall0624.manage;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @EnableTransactionManagement
 @SpringBootApplication
+@ComponentScan(basePackages = "com.atguigu.gmall0624")
 @MapperScan(basePackages = "com.atguigu.gmall0624.manage.mapper")
 public class GmallManageServiceApplication {
 
