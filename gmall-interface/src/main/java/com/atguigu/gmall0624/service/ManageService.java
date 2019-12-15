@@ -45,4 +45,6 @@ public interface ManageService {
 
     //销售属性值切换
     List<SkuSaleAttrValue> getSkuSaleAttrValueListBySpu(String spuId);
+
+    List<BaseAttrInfo> getAttrList(List<String> attrValueIdList);
 }

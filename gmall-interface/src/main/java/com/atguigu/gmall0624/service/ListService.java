@@ -11,4 +11,6 @@ public interface ListService {
 
     //全文检索
     SkuLsResult search(SkuLsParams skuLsParams);
+
+    void incrHotScore (String skuId);
 }

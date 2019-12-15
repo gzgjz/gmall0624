@@ -10,7 +10,7 @@ import com.atguigu.gmall0624.manage.mapper.*;
 import com.atguigu.gmall0624.service.ManageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import redis.clients.jedis.Jedis;
 
 import java.util.Collections;
@@ -310,6 +310,14 @@ public class ManageServiceImpl implements ManageService{
     @Override
     public List<SkuSaleAttrValue> getSkuSaleAttrValueListBySpu(String spuId) {
         return skuSaleAttrValueMapper.selectSkuSaleAttrValueListBySpu(spuId);
+    }
+
+    @Override
+    public List<BaseAttrInfo> getAttrList(List<String> attrValueIdList) {
+        String attrValueIds  = StringUtils.join(attrValueIdList.toArray(), ",");
+
+        System.out.println(attrValueIds);
+        return baseAttrInfoMapper.selectAttrInfoListByIds(attrValueIds);
     }
 
 
