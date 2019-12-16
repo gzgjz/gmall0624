@@ -18,4 +18,8 @@ public interface UserInfoService {
     List<UserAddress> findUserAddressListByUserId(String userId);
 
     List<UserAddress> findUserAddressListByUserId(UserAddress userAddress);
+
+    UserInfo login(UserInfo userInfo);
+
+    UserInfo verify(String userId);
 }
