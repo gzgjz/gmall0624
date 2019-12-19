@@ -3,14 +3,17 @@ package com.atguigu.gmall0624.config;
 import com.alibaba.fastjson.JSON;
 import com.atguigu.gmall0624.passport.config.CookieUtil;
 import com.atguigu.gmall0624.passport.config.WebConst;
+import com.atguigu.gmall0624.utils.HttpClientUtil;
 import io.jsonwebtoken.impl.Base64UrlCodec;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.net.URLEncoder;
 import java.util.Map;
 
 // 拦截器
@@ -39,6 +42,34 @@ public class AuthInterceptor extends HandlerInterceptorAdapter{
             // 保存到作用域
             request.setAttribute("nickName",nickName);
         }
+
+        HandlerMethod handlerMethod = (HandlerMethod)handler;
+        LoginRequire methodAnnotation = handlerMethod.getMethodAnnotation(LoginRequire.class);
+        if(methodAnnotation != null){
+            String salt = request.getHeader("X-forwarded-for");
+            String result = HttpClientUtil.doGet(WebConst.VERIFY_ADDRESS + "?token=" + token + "&salt=" + salt);
+            if("success".equals(result)){
+                //登陆成功，记录userId
+                Map map = makeUserInfo(token);
+
+                String userId = (String) map.get("userId");
+                // 保存到作用域
+                request.setAttribute("nickName",userId);
+
+                return true;
+            }else {
+                if(methodAnnotation.autoRedirect()){
+                    String requestURL = request.getRequestURL().toString();
+                    System.out.println(requestURL);
+                    String encodeURL = URLEncoder.encode(requestURL, "UTF-8");
+                    System.out.println(encodeURL);
+                    response.sendRedirect(WebConst.LOGIN_ADDRESS+"?originUrl="+encodeURL);
+                    return false;
+
+                }
+            }
+        }
+
         // 放行拦截器：
         return true;
     }
