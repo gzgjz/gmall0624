@@ -124,7 +124,7 @@ public class CartServiceImpl implements CartService {
     }
 
     // 根据用户Id 查询数据库
-    private List<CartInfo> loadCartCache(String userId) {
+    public List<CartInfo> loadCartCache(String userId) {
         // 获取jedis
         Jedis jedis = redistUtil.getJedis();
 

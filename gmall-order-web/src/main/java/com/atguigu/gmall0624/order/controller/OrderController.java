@@ -1,12 +1,10 @@
 package com.atguigu.gmall0624.order.controller;
 
 import com.alibaba.dubbo.config.annotation.Reference;
-import com.atguigu.gmall0624.bean.CartInfo;
-import com.atguigu.gmall0624.bean.OrderDetail;
-import com.atguigu.gmall0624.bean.OrderInfo;
-import com.atguigu.gmall0624.bean.UserAddress;
+import com.atguigu.gmall0624.bean.*;
 import com.atguigu.gmall0624.config.LoginRequire;
 import com.atguigu.gmall0624.service.CartService;
+import com.atguigu.gmall0624.service.ManageService;
 import com.atguigu.gmall0624.service.OrderService;
 import com.atguigu.gmall0624.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +27,9 @@ public class OrderController {
 
     @Reference
     private OrderService orderService;
+
+    @Reference
+    private ManageService manageService;
 
     @RequestMapping("trade")
     //@ResponseBody // 第一个作用：返回json 字符串。第二个作用：将控制器中的数据直接输入到一个空白页！
@@ -72,15 +73,49 @@ public class OrderController {
 
         request.setAttribute("userAddressList",userAddressList);
 
+        //将流水号保存到后台
+        String tradeNo = orderService.getTradeNo(userId);
+        request.setAttribute("tradeNo",tradeNo);
+
         return "trade";
     }
     // http://trade.gmall.com/submitOrder
     @RequestMapping("submitOrder")
     @LoginRequire
     public String submitOrder(OrderInfo orderInfo,HttpServletRequest request){
+        String tradeNo = request.getParameter("tradeNo");
+
         // 获取用户Id
         String userId = (String) request.getAttribute("userId");
         orderInfo.setUserId(userId);
+        boolean result = orderService.checkTradeCode(userId, tradeNo);
+        if(!result){
+            request.setAttribute("errMsg","不能重复提交订单！");
+
+            return "tradeFail";
+        }
+
+        orderService.deleteTradeCode(userId);
+        //验证库存
+        List<OrderDetail> orderDetailList = orderInfo.getOrderDetailList();
+        if(orderDetailList != null && orderDetailList.size() > 0){
+            for (OrderDetail orderDetail : orderDetailList) {
+                boolean flag = orderService.checkStock(orderDetail.getSkuId(),orderDetail.getSkuNum());
+
+                if(!flag){
+                    request.setAttribute("errMsg",orderDetail.getSkuName()+"库存不足，请重新下单订单！");
+
+                    return "tradeFail";
+                }
+
+                //验证价格
+                SkuInfo skuInfo = manageService.getSkuInfo(orderDetail.getSkuId());
+                if(skuInfo.getPrice().compareTo(orderDetail.getOrderPrice())!=0){
+                    cartService.loadCartCache(userId);
+                }
+            }
+        }
+
         // 保存订单
         String orderId = orderService.saveOrder(orderInfo);
         //  支付页面

@@ -5,16 +5,16 @@ import com.atguigu.gmall0624.bean.OrderDetail;
 import com.atguigu.gmall0624.bean.OrderInfo;
 import com.atguigu.gmall0624.bean.enums.OrderStatus;
 import com.atguigu.gmall0624.bean.enums.ProcessStatus;
+import com.atguigu.gmall0624.config.RedistUtil;
 import com.atguigu.gmall0624.order.mapper.OrderDetailMapper;
 import com.atguigu.gmall0624.order.mapper.OrderInfoMapper;
 import com.atguigu.gmall0624.service.OrderService;
+import com.atguigu.gmall0624.utils.HttpClientUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import redis.clients.jedis.Jedis;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -25,6 +25,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderDetailMapper orderDetailMapper;
+
+    @Autowired
+    private RedistUtil redistUtil;
 
     @Override
     @Transactional
@@ -57,5 +60,54 @@ public class OrderServiceImpl implements OrderService {
             }
         }
         return orderInfo.getId();
+    }
+
+    @Override
+    public String getTradeNo(String userId) {
+        //流水号
+        String outTradeNo = UUID.randomUUID().toString().replace("-","");
+        Jedis jedis = redistUtil.getJedis();
+        //key
+        String tradeNoKey = "user:"+userId+":tradeCode";
+        jedis.set(tradeNoKey,outTradeNo);
+        jedis.close();
+        return outTradeNo;
+    }
+
+    @Override
+    public boolean checkTradeCode(String userId, String tradeCodeNo) {
+
+        Jedis jedis = redistUtil.getJedis();
+        //key
+        String tradeNoKey = "user:"+userId+":tradeCode";
+        String redisTradeNo = jedis.get(tradeNoKey);
+
+        jedis.close();
+        return tradeCodeNo.equals(redisTradeNo);
+    }
+
+    @Override
+    public void deleteTradeCode(String userId) {
+        Jedis jedis = redistUtil.getJedis();
+        //key
+        String tradeNoKey = "user:"+userId+":tradeCode";
+        jedis.del(tradeNoKey);
+        jedis.close();
+    }
+
+    @Override
+    public boolean checkStock(String skuId, Integer skuNum) {
+        //http://www.gware.com /hasStock?skuId=10221&num=2
+        String res = HttpClientUtil.doGet("http://www.gware.com /hasStock?skuId=" + skuId + "&num=" + skuNum);
+        if("1".equals(res)){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    @Override
+    public OrderInfo getOrderInfo(String orderId) {
+        return orderInfoMapper.selectByPrimaryKey(orderId);
     }
 }
